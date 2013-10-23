@@ -591,7 +591,7 @@ class Checker(object):
         pass
 
     # "stmt" type nodes
-    RETURN = DELETE = PRINT = WHILE = IF = WITH = WITHITEM = RAISE = \
+    DELETE = PRINT = WHILE = IF = WITH = WITHITEM = RAISE = \
         TRYFINALLY = ASSERT = EXEC = EXPR = handleChildren
 
     CONTINUE = BREAK = PASS = ignore
@@ -616,6 +616,20 @@ class Checker(object):
 
     # additional node types
     COMPREHENSION = KEYWORD = handleChildren
+
+    def RETURN(self, tree):
+        current_function = self.scopeStack[-1]
+        for node in iter_child_nodes(tree):
+            class_name = node.__class__.__name__
+            if class_name in ('Num', 'Str', 'List', 'Tuple', ):
+                if (getattr(current_function, 'return_type', None) and
+                    current_function.return_type != class_name):
+                    self.report(messages.InconsistentReturnValues,
+                                node,
+                                current_function.return_type)
+                else:
+                    current_function.return_type = class_name
+            self.handleNode(node, tree)
 
     def GLOBAL(self, node):
         """

@@ -25,6 +25,14 @@ class UnusedImport(Message):
         self.message_args = (name,)
 
 
+class InconsistentReturnValues(Message):
+    message = 'return value type expects %r'
+
+    def __init__(self, filename, loc, return_type):
+        Message.__init__(self, filename, loc)
+        self.message_args = (return_type, )
+
+
 class RedefinedWhileUnused(Message):
     message = 'redefinition of unused %r from line %r'
 
