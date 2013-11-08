@@ -34,6 +34,10 @@ class Test(TestCase):
             return a + b
         f(1, 2)
         ''', )
+        self.flakes('''
+        x = lambda x: None
+        x
+        ''', )
 
     def test_break(self):
         self.flakes('''
@@ -48,6 +52,18 @@ class Test(TestCase):
         ''', m.UnreachableCode)
         self.flakes('''
         for x in []:
+            x
+            break
+        ''', )
+        self.flakes('''
+        for x in []:
+            x
+            try:
+                break
+            except:
+                break
+            else:
+                break
             break
         ''', )
 
