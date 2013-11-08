@@ -22,6 +22,66 @@ class Test(TestCase):
         f()
         ''', m.UndefinedName)
 
+    def test_break(self):
+        self.flakes('''
+        for x in []:
+            break
+            break
+        ''', m.UnreachableCode)
+        self.flakes('''
+        for x in []:
+            break
+            continue
+        ''', m.UnreachableCode)
+        self.flakes('''
+        for x in []:
+            break
+        ''', )
+
+    def test_continue(self):
+        self.flakes('''
+        while True:
+            continue
+            continue
+        ''', m.UnreachableCode)
+        self.flakes('''
+        while True:
+            continue
+        ''', )
+        self.flakes('''
+        while True:
+            if True:
+                continue
+            else:
+                continue
+        ''', )
+
+    def test_unreachable(self):
+        self.flakes('''
+        def foo():
+            try:
+                return 0
+            except:
+                return 0
+            finally:
+                return 0
+        foo()
+        ''')
+        self.flakes('''
+        def foo():
+            if 1:
+                return 0
+            else:
+                return 0
+        foo()
+        ''')
+        self.flakes('''
+        def foo():
+            return 0
+            print 'foo'
+        foo()
+        ''', m.UnreachableCode)
+
     def test_redefinedInListComp(self):
         """
         Test that shadowing a variable in a list comprehension raises

@@ -32,6 +32,13 @@ class InconsistentReturnValues(Message):
         Message.__init__(self, filename, loc)
         self.message_args = (return_type, )
 
+class UnreachableCode(Message):
+    message = 'unreachable after return on line %r'
+
+    def __init__(self, filename, loc, orig_loc):
+        Message.__init__(self, filename, loc)
+        self.message_args = (orig_loc.lineno, )
+
 
 class RedefinedWhileUnused(Message):
     message = 'redefinition of unused %r from line %r'

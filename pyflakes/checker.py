@@ -550,6 +550,21 @@ class Checker(object):
         self.nodeDepth += 1
         node.level = self.nodeDepth
         node.parent = parent
+
+        # check if node is reachable
+        marker = getattr(parent, 'stop', None)
+        else_marker = getattr(parent, 'stop_else', None)
+        if (hasattr(parent, 'orelse') and
+            type(parent.orelse) == type([]) and
+            node in parent.orelse):
+            if else_marker:
+                self.report(messages.UnreachableCode, node, else_marker)
+                del parent.return_tree_else
+        elif (marker and
+              node.__class__.__name__ != 'ExceptHandler'):
+            self.report(messages.UnreachableCode, node, marker)
+            del parent.return_tree
+
         try:
             handler = self.getNodeHandler(node.__class__)
             handler(node)
@@ -590,11 +605,18 @@ class Checker(object):
     def ignore(self, node):
         pass
 
+    def handleStopFlow(self, tree):
+        if hasattr(tree.parent, 'orelse') and tree in tree.parent.orelse:
+            tree.parent.stop_else = tree
+        else:
+            tree.parent.stop = tree
+
     # "stmt" type nodes
     DELETE = PRINT = WHILE = IF = WITH = WITHITEM = RAISE = \
         TRYFINALLY = ASSERT = EXEC = EXPR = handleChildren
 
-    CONTINUE = BREAK = PASS = ignore
+    CONTINUE = BREAK = handleStopFlow
+    PASS = ignore
 
     # "expr" type nodes
     BOOLOP = BINOP = UNARYOP = IFEXP = DICT = SET = YIELD = YIELDFROM = \
@@ -619,6 +641,11 @@ class Checker(object):
 
     def RETURN(self, tree):
         current_function = self.scopeStack[-1]
+
+        # save the node in the parent to check for unreachable code
+        self.handleStopFlow(tree)
+
+        # check for return type
         for node in iter_child_nodes(tree):
             class_name = node.__class__.__name__
             if class_name in ('Num', 'Str', 'List', 'Tuple', ):
