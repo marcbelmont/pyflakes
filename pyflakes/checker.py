@@ -191,6 +191,17 @@ class FunctionScope(Scope):
                     and isinstance(binding, Assignment)):
                 yield name, binding
 
+    def unusedArguments(self):
+        """
+        Return a generator for the arguments which have not been used.
+        """
+        for name, binding in self.items():
+            if (not binding.used and name not in self.globals
+                and not self.usesLocals
+                and isinstance(binding, Argument)
+                and name != 'self'):
+                yield name, binding
+
 
 class GeneratorScope(Scope):
     pass
@@ -801,6 +812,8 @@ class Checker(object):
                 """
                 for name, binding in self.scope.unusedAssignments():
                     self.report(messages.UnusedVariable, binding.source, name)
+                for name, binding in self.scope.unusedArguments():
+                    self.report(messages.UnusedArgument, binding.source, name)
             self.deferAssignment(checkUnusedAssignments)
             self.popScope()
 

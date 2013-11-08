@@ -180,6 +180,7 @@ class Test(TestOther, TestImports, TestUndefinedNames):
                     >>> assert
                     >>> this
                 """
+                arg1, arg2, arg3
             ''',
             m.DoctestSyntaxError,
             m.UndefinedName).messages

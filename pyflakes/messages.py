@@ -141,3 +141,13 @@ class UnusedVariable(Message):
     def __init__(self, filename, loc, names):
         Message.__init__(self, filename, loc)
         self.message_args = (names,)
+
+class UnusedArgument(Message):
+    """
+    Indicates that a function argument has not been used.
+    """
+    message = 'argument %r never used'
+
+    def __init__(self, filename, loc, names):
+        Message.__init__(self, filename, loc)
+        self.message_args = (names,)

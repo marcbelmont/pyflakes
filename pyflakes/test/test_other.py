@@ -11,7 +11,7 @@ from pyflakes.test.harness import TestCase, skip, skipIf
 class Test(TestCase):
 
     def test_duplicateArgs(self):
-        self.flakes('def fu(bar, bar): pass', m.DuplicateArgument)
+        self.flakes('def fu(bar, bar): bar', m.DuplicateArgument)
 
     @skip("todo: this requires finding all assignments in the function body first")
     def test_localReferencedBeforeAssignment(self):
@@ -21,6 +21,19 @@ class Test(TestCase):
             a; a=1
         f()
         ''', m.UndefinedName)
+
+
+    def test_unused_arguments(self):
+        self.flakes('''
+        def f(a):
+            return
+        f(1)
+        ''', m.UnusedArgument)
+        self.flakes('''
+        def f(a, b):
+            return a + b
+        f(1, 2)
+        ''', )
 
     def test_break(self):
         self.flakes('''
@@ -326,7 +339,7 @@ class Test(TestCase):
                 pass
             @t.setter
             def t(self, value):
-                pass
+                value
             @t.deleter
             def t(self):
                 pass

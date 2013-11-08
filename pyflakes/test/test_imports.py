@@ -415,7 +415,7 @@ class Test(TestCase):
         self.flakes('''
         import fu
         def f(bar=fu):
-            pass
+            bar
         ''')
 
     def test_usedInAttributeAssign(self):
