@@ -570,11 +570,11 @@ class Checker(object):
             node in parent.orelse):
             if else_marker:
                 self.report(messages.UnreachableCode, node, else_marker)
-                del parent.return_tree_else
+                del parent.stop_else
         elif (marker and
               node.__class__.__name__ != 'ExceptHandler'):
             self.report(messages.UnreachableCode, node, marker)
-            del parent.return_tree
+            del parent.stop
 
         try:
             handler = self.getNodeHandler(node.__class__)
